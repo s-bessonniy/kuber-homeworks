@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-mb
+  labels:
+    app: multitool-busybox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: multitool-busybox
+  template:
+    metadata:
+      labels:
+        app: multitool-busybox
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        command: ['sh', '-c', 'while true; do echo $(date) >> /output/output.txt; sleep 5; done']
+        volumeMounts:
+        - name: multitool-busybox-volume
+          mountPath: /output
+      - name: multitool
+        image: wbitt/network-multitool:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: HTTP_PORT
+          value: "80"
+        volumeMounts:
+        - name: multitool-busybox-volume
+          mountPath: /input
+      volumes:
+      - name: multitool-busybox-volume
+        emptyDir: {}
